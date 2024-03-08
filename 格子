@@ -1,0 +1,38 @@
+import ccxt
+
+# 填入你的API密钥和秘钥
+api_key = 'YOUR_API_KEY'
+api_secret = 'YOUR_API_SECRET'
+
+# 创建交易所对象（这里以Binance为例）
+exchange = ccxt.binance({
+    'apiKey': api_key,
+    'secret': api_secret,
+})
+
+# 定义网格交易参数
+symbol = 'BTC/USDT'  # 交易对
+grid_size = 0.01  # 网格大小（以比特币价格为单位）
+quantity = 0.001  # 每个网格的交易数量
+num_grids = 10  # 网格数量
+
+# 获取最新的比特币价格
+ticker = exchange.fetch_ticker(symbol)
+last_price = ticker['last']
+
+# 计算网格的买入和卖出价格
+buy_prices = [last_price - i * grid_size for i in range(num_grids)]
+sell_prices = [last_price + i * grid_size for i in range(num_grids)]
+
+# 执行网格交易
+for i in range(num_grids):
+    buy_price = buy_prices[i]
+    sell_price = sell_prices[i]
+
+    # 下买单
+    buy_order = exchange.create_limit_buy_order(symbol, quantity, buy_price)
+    print(f"下买单：价格={buy_price} 数量={quantity} 订单ID={buy_order['id']}")
+
+    # 下卖单
+    sell_order = exchange.create_limit_sell_order(symbol, quantity, sell_price)
+    print(f"下卖单：价格={sell_price} 数量={quantity} 订单ID={sell_order['id']}")
